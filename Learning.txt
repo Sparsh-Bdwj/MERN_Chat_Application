@@ -1,0 +1,153 @@
+1 how to hash a password.
+so the basic flow of hassing a password is 
+first we have to create the salt using
+-> await bcrypt.getSalt(enter_length_of_the_salt);
+then using the salt we will hash the password we receved from the body
+-> await bcrypt.hash(password, salt);
+
+2 how to create a token
+to create a token we just need to pass the user._id to the genrateUserToken()
+inside the genrateUserToken we import jsonwebtoken as jwt we will sign the {userId} and Sercert_key with jwt
+-> jwt.sign({userId}, process.env.JWT_SECRET_KEY)
+
+3 Make a habit if sending status with the json.res:
+400 → Missing details
+409 → Account already exists
+201 → Created successfully
+200 → Login successfully
+500 → Internal server error
+
+4 To verify the password
+use bcrypt to verify the password by comparing the password entered from the password in userData find with the email entered
+-> const isPasswordCorrect = await bcrypt.compare(password, userData.password);
+
+5 How to create a data model;
+first import mongoose then create a Schema using mongoose and then using the schema create the data model
+const userSchema = new mongoose.Schema({});
+const User = mongoose.model("user", userSchema);
+
+6 Creating a auth middleware to know that the user is vaild or not
+frist know that the token is present in the req.headers.authorization and it should start with the Bearer string if both the conditions are true
+extract the token
+-> let token;
+-> if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
+    token = req.headers.authorization.split(" ")[1];
+}
+then after getting the header we will verify the token
+-> const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+then we get the user from the userId
+-> const user = await User.findById(decoded.userId).select("-password");
+then attach user to the request
+-> req.user = user;
+-> next();
+
+7 setting up cloudinary to store images online 
+create a new API key from the cloudinary
+store 3 variables in the .env file cloud_name, api_key, api_secret
+the config cloudinary in cloudinary.js file
+-> import {vs as cloudinary} from "cloudinary"
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,    
+})
+then export it as default to use in the any part of the project
+
+8 creating a controller for update user profilePic, fullName, and bio
+get it from the req.body and validated them are they present or not
+pass fullName and bio to updatedData object and if profilePic is provided store it to db using cloudinary
+cloudinary uploding process
+const upload = await cloudinary.uploader.upload(profilePic, {
+  folder: "user_profiles",
+  resource_type: "auto",
+});
+upadatedData.profilePic = upload.secure_url;
+then update the User data in the data base and store in UpdatedUser by using the findByIdAndUpdate function pass updatedData into it and remove "password" before sending 
+data to user: UpdatedUser in the response
+
+
+9 creating the message model. inside the message model pass the reference of the User model eg-
+senderId: {type: mongoose.Schema.Types.objectId, ref: "User", required: true}
+receiverId: {type: mongoose.Schema.Types.onjectId, ref: "User", required: true}
+
+10 Now we will be getting the users for the side Bar
+-> first we will get the userId from the request body throught a middleware (protectRoute middleware in the auth.js file)
+const userId = req.user._id;
+-> then we will all the users from the database except the current user
+const filterUser = await User.find({_id: {$ne: userId}}).select("-password");
+-> then we create a object to store unseenMessages
+const unseenMessages = {};
+-> then from each user in filterUser we find the count of unseen messages from that user
+const promises = filterUser.map( async (user)=> {
+  const message = await user.find({
+    senderId: user._id,
+    receiverId: userId,
+    seen: false,
+  })
+  if(messages.length > 0){
+    unseenMessages[user._id] = messages.length;
+  }
+});
+-> then two run queries in parallel we will do
+ await Promise.all(promises);
+-> then we will send the users and unseenMessages to the frontend
+json.status(200).res(success: true, users: filterUser, unseenMessages);
+
+11 Now we will create a controller to get all the messages for selected user
+-> get userId and the selectedUserId
+const {id: selectedUserId} = req.params;
+const myId = req.user._id;
+-> get messages between both sender and receiver
+const messages = await Message.find({
+  $or: [
+    {senderId: selectedUserId, receiverId: myId},
+    {senderId: myId, receiverId: selectedUserId}
+  ]
+})
+// then mark the messages seen (bulk marking is done when the user open the window)
+await Message.updateMany({senderId: selectedUserId, receiverId:myId}, {seen: true});
+// then send the message along the res
+return res.status(200).json({success: true, messages})
+
+12 Now we will be creating a route that will mark the real time messages as seen
+-> get the message id from params (/api/messages/:id/seen)
+const {id} = req.params;
+-> then we will find that message and update its seen property
+await Message.findByIdAndUpdate(id, {seen: true}); then we will the response
+
+******************************************************************************
+12.5 Making a sendMessage controller
+->The sendMessage controller handles the process of sending a new chat message between users.
+->It takes the message text and optional image from the request body and identifies the receiver using the route parameter. 
+->If an image is included, it uploads it to Cloudinary and stores the secure URL. 
+->Then, it creates a new message document in the MongoDB database containing the sender ID, receiver ID, text, and image. 
+->Finally, it responds with the newly created message, allowing the frontend to display it instantly in the chat interface
+
+13 Now we will be implementing a socket.io to make web-socket connection with the server
+steps
+-> import server from socket.io 
+import {Server} from "socket.io"  
+-> initializing a socket.io server
+export const io = new Server(server, {cors: {origin: "*"}});
+-> now we will create a userSocketMap to store all the current user
+const userSocketMap = {} // {userId: socket.id};
+-> now we will create a socket connection handler
+io.on("connection", (socket) => {
+  const userId = socket.handshake.query.userId; // this user id we will be getting from the frontend
+  console.log("User connected", userId);
+  if(userId) userSocketMap[userId] = socket.id; // this is inbuild socket id for every socket
+  // Emit online users to all clients
+  io.emit("getAllOnlineUsers", object.key(userSocketMap));
+  // delete user when disconneted
+  socket.on("disconnect", ()=> {
+    clg("User Disconnected", userId);
+    delete userSocketMap[userId];
+    io.emit("getAllOnlineUsers", object.keys(userSocketMap))
+  })
+})
+
+14 sending the message to the receiver in the sendMessage controller in real time using socket.io
+const receverSocketId = userSocketMap[receiverId];
+if(receverSocketId){
+  io.to(receverSocketId).emit("New message", newMessage);
+}
