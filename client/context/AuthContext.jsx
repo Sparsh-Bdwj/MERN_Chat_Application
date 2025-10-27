@@ -26,10 +26,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
   useEffect(() => {
+    const token = localStorage.getItem("token");
     if (token) {
-      axios.defaults.headers.common["token"] = token;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setToken(token);
+      checkAuth();
     }
-    checkAuth();
   }, []);
   // login function to handle user authentication and socket connection
   const login = async (state, credentials) => {
@@ -37,8 +39,8 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post(`/api/auth/${state}`, credentials);
       if (data.success) {
         setAuthUser(data.userData);
-        connectSocket(data.useData);
-        axios.defaults.headers.common["token"] = data.token;
+        connectSocket(data.userData);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setToken(data.token);
         localStorage.setItem("token", data.token);
         toast.success(data.message);
@@ -60,7 +62,14 @@ export const AuthProvider = ({ children }) => {
   // Update profile function to handle user profile updates
   const updateProfile = async (body) => {
     try {
-      const { data } = await axios.put("/api/auth/update-profile", body);
+      const token = localStorage.getItem("token");
+      const { data } = await axios.put("/api/auth/update-profile", body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (data.success) {
         setAuthUser(data.user);
         toast.success("Profile Updated successfully");
