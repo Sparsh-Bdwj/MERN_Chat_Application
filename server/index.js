@@ -39,7 +39,7 @@ app.use("/api/status", (req, res) => res.send("Server is live"));
 // adding the userRouter
 app.use("/api/auth", userRouter);
 // adding the messageRouter
-app.use("/api/message", messageRouter);
+app.use("/api/messages", messageRouter);
 // connected to MONGODB
 await connectDB();
 const PORT = process.env.PORT || 5000;

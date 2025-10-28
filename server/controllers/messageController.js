@@ -11,7 +11,7 @@ export const getUsersForSidebar = async (req, res) => {
       "-password"
     );
     // count no of message not seen
-    const unseenMessage = {};
+    const unseenMessages = {};
     const promises = filterUser.map(async (user) => {
       const message = await Message.find({
         senderId: user._id,
@@ -19,13 +19,13 @@ export const getUsersForSidebar = async (req, res) => {
         seen: false,
       });
       if (message.length > 0) {
-        unseenMessage[user._id] = message.length;
+        unseenMessages[user._id] = message.length;
       }
     });
     await Promise.all(promises);
     return res
       .status(200)
-      .json({ success: true, users: filterUser, unseenMessage });
+      .json({ success: true, users: filterUser, unseenMessages });
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({
@@ -110,8 +110,13 @@ export const sendMessage = async (req, res) => {
     });
     // Emit newMessage to the receiver's socket
     const receiverSocketId = userSocketMap[receiverId];
+    const senderSocketId = userSocketMap[senderId];
+
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("newMessage", newMessage);
     }
     res.status(200).json({ success: true, newMessage });
   } catch (error) {

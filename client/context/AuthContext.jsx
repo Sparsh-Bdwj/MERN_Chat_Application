@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   // adding default states which will we pass alonged the context provider
   const [token, setToken] = useState(localStorage.getItem("token")); // fetch the token from the browser
   const [authUser, setAuthUser] = useState(null);
-  const [onlineUser, setOnlineUser] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const [socket, setSocket] = useState(null);
   // check is the user is authenticated and if so, set the user data and connect the socket
   const checkAuth = async () => {
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setAuthUser(null);
-    setOnlineUser([]);
+    setOnlineUsers([]);
     axios.defaults.headers.common["token"] = null;
     toast.success("Logged out successfully");
     socket.disconnect();
@@ -80,23 +80,53 @@ export const AuthProvider = ({ children }) => {
   };
 
   // connect socket function to handle socket connection and online users updates
+  // const connectSocket = (userData) => {
+  //   if (!userData?._id) return;
+  //   if (socket) socket.disconnect();
+  //   const newSocket = io(backendUrl, {
+  //     query: {
+  //       userId: userData._id,
+  //     },
+  //   });
+  //   newSocket.connect();
+  //   setSocket(newSocket);
+  //   newSocket.on("getOnlineUserss", (userIds) => {
+  //     setOnlineUsers(userIds);
+  //   });
+  // };
   const connectSocket = (userData) => {
-    if (!userData && socket?.connect) return;
+    if (!userData?._id) return;
+
+    // If a socket already exists, disconnect before reconnecting
+    if (socket) {
+      socket.disconnect();
+    }
+
     const newSocket = io(backendUrl, {
-      query: {
-        userId: userData._id,
-      },
+      query: { userId: userData._id },
+      transports: ["websocket"], // added for real time usecase
+      reconnection: true,
     });
-    newSocket.connect();
-    setSocket(newSocket);
+
+    // ✅ Register listeners only once
+    newSocket.once("connect", () => {
+      console.log("🟢 Socket connected for:", userData.fullName);
+    });
+
     newSocket.on("getOnlineUsers", (userIds) => {
-      setOnlineUser(userIds);
+      setOnlineUsers(userIds || []);
     });
+
+    newSocket.once("disconnect", () => {
+      console.log("🔴 Socket disconnected for:", userData.fullName);
+    });
+    setSocket(newSocket);
   };
+
   const value = {
     axios,
     authUser,
-    onlineUser,
+    onlineUsers,
     socket,
     login,
     logout,
