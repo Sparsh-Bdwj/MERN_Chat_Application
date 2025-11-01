@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import assets, { imagesDummyData } from "../assets/assets";
 import { ChatContext } from "../../context/ChatContext";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const RightSideBar = () => {
   const { selectedUser, messages } = useContext(ChatContext);
@@ -48,7 +48,15 @@ const RightSideBar = () => {
         </div>
         <button
           onClick={() => logout()}
-          className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white border-none text-sm font-light py-2 px-20 rounded-full cursor-pointer"
+          className="absolute bottom-5 left-1/2 transform -translate-x-1/2
+             py-2 px-20 rounded-full text-sm font-light text-white
+             bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600
+             shadow-md shadow-violet-500/30
+             hover:from-indigo-600 hover:via-purple-700 hover:to-violet-800
+             hover:shadow-violet-600/40
+             active:scale-[0.98]
+             transition-all duration-300 ease-out
+             focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-transparent"
         >
           Logout
         </button>

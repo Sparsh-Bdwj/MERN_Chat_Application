@@ -4,12 +4,12 @@ import Homepage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 const App = () => {
   const { authUser } = useContext(AuthContext);
   return (
-    <div className="bg-[url('./src/assets/bgImage.svg')] bg-contain">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-gray-200">
       <Toaster />
       <Routes>
         <Route

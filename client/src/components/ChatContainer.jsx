@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import assets, { messagesDummyData } from "../assets/assets";
+import assets from "../assets/assets";
 import { formatMeassageTime } from "../lib/utils";
 import { ChatContext } from "../../context/ChatContext";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 
 const ChatContainer = () => {
@@ -43,7 +43,10 @@ const ChatContainer = () => {
     }
   }, [messages]);
   return selectedUser ? (
-    <div className="h-full overflow-scroll relative backdrop-blur-lg">
+    <div
+      className="h-full overflow-scroll relative backdrop-blur-xl bg-gradient-to-br from-[#1e1b3a]/70 via-[#2d2a4a]/60 to-[#1e1b3a]/70 border border-white/10 shadow-lg
+"
+    >
       {/*---------- header -----------*/}
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
         <img
@@ -144,9 +147,21 @@ const ChatContainer = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col items-center justify-center gap text-gray-500 bg-white/10 max-md:hidden">
-      <img src={assets.logo_icon} alt="" className="max-w-16" />
-      <p className="text-lg font-medium text-white">Chat anytime, anywhere</p>
+    <div className="flex flex-col items-center justify-center gap-3 text-gray-300 bg-white/10 max-md:hidden py-10 rounded-r-xl">
+      {/* Logo (bigger version) */}
+      <div className="flex items-center gap-2 select-none">
+        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          💬
+        </div>
+        <h1 className="text-4xl font-semibold bg-gradient-to-r from-purple-400 to-violet-600 bg-clip-text text-transparent tracking-wide">
+          MERN<span className="font-normal text-gray-300">chat</span>
+        </h1>
+      </div>
+
+      {/* Tagline */}
+      <p className="text-lg font-medium text-white opacity-80 mt-2">
+        Chat anytime, anywhere
+      </p>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 import { ChatContext } from "../../context/ChatContext";
 
 const SideBar = () => {
@@ -27,42 +27,59 @@ const SideBar = () => {
   }, [onlineUsers]);
   return (
     <div
-      className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${
+      className={`bg-[#8185B2]/10 h-full p-5 rounded-l-xl overflow-y-scroll text-white ${
         selectedUser ? "max-md:hidden" : ""
       }`}
     >
       <div className="pb-5">
+        {" "}
         <div className="flex justify-between items-center">
-          <img src={assets.logo} alt="logo" className="max-w-40" />
+          {" "}
+          <div className="flex items-center gap-1 cursor-pointer select-none">
+            {" "}
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+              {" "}
+              💬{" "}
+            </div>{" "}
+            <h1 className="text-sm font-semibold bg-gradient-to-r from-purple-400 to-violet-600 bg-clip-text text-transparent tracking-wide">
+              {" "}
+              MERN<span className="font-normal text-gray-300">chat</span>{" "}
+            </h1>{" "}
+          </div>{" "}
           <div className="relative py-2 group">
+            {" "}
             <img
               src={assets.menu_icon}
               alt="Menu"
               className="max-h-5 cursor-pointer"
-            />
+            />{" "}
             <div className="absolute top-full right-0 z-20 w-32 p-5 rounded-md bg-[#282142] border border-gray-600 text-gray-100 hidden group-hover:block">
+              {" "}
               <p
                 onClick={() => navigate("/profile")}
                 className="cursor-pointer text-sm"
               >
-                Edit Profile
-              </p>
-              <hr className="my-2 border-t border-gray-500" />
+                {" "}
+                Edit Profile{" "}
+              </p>{" "}
+              <hr className="my-2 border-t border-gray-500" />{" "}
               <p className="cursor-pointer text-sm" onClick={() => logout()}>
-                Logout
-              </p>
-            </div>
-          </div>
-        </div>
+                {" "}
+                Logout{" "}
+              </p>{" "}
+            </div>{" "}
+          </div>{" "}
+        </div>{" "}
         <div className="bg-[#282142] rounded-full flex items-center gap-2 py-3 px-4 mt-5">
-          <img src={assets.search_icon} alt="search" className="w-3" />
+          {" "}
+          <img src={assets.search_icon} alt="search" className="w-3" />{" "}
           <input
             onChange={(e) => setInput(e.target.value)}
             type="text"
             className="bg-transparent border-none outline-none text-white text-xs placeholder-[#c8c8c8] flex-1"
             placeholder="Search user"
-          />
-        </div>
+          />{" "}
+        </div>{" "}
       </div>
       <div className="flex flex-col">
         {filterUsers.map((user, index) => (

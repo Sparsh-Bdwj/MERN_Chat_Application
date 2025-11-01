@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const ProfilePage = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
@@ -72,7 +72,15 @@ const ProfilePage = () => {
           ></textarea>
           <button
             type="submit"
-            className="p-2 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-full text-lg cursor-pointer"
+            className="p-2 rounded-full text-lg text-white
+             bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600
+             shadow-md shadow-violet-500/30
+             hover:from-indigo-600 hover:via-purple-700 hover:to-violet-800
+             hover:shadow-violet-600/40
+             active:scale-[0.98]
+             transition-all duration-300 ease-out
+             focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-transparent
+             cursor-pointer"
           >
             Save
           </button>
