@@ -1,9 +1,9 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-export const AuthContext = createContext();
+import { AuthContext } from "./authContext";
 // set default axios url
 axios.defaults.baseURL = backendUrl;
 
@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
   useEffect(() => {
-    const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setToken(token);
@@ -39,10 +38,14 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post(`/api/auth/${state}`, credentials);
       if (data.success) {
         setAuthUser(data.userData);
-        connectSocket(data.userData);
+
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-        setToken(data.token);
+
         localStorage.setItem("token", data.token);
+        setToken(data.token);
+
+        connectSocket(data.userData, data.token); // ✅ pass token
+
         toast.success(data.message);
       }
     } catch (error) {
@@ -55,9 +58,11 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setAuthUser(null);
     setOnlineUsers([]);
-    axios.defaults.headers.common["token"] = null;
+    if (socket) {
+      socket.disconnect();
+    }
+    delete axios.defaults.headers.common["Authorization"];
     toast.success("Logged out successfully");
-    socket.disconnect();
   };
   // Update profile function to handle user profile updates
   const updateProfile = async (body) => {
@@ -79,36 +84,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // connect socket function to handle socket connection and online users updates
-  // const connectSocket = (userData) => {
-  //   if (!userData?._id) return;
-  //   if (socket) socket.disconnect();
-  //   const newSocket = io(backendUrl, {
-  //     query: {
-  //       userId: userData._id,
-  //     },
-  //   });
-  //   newSocket.connect();
-  //   setSocket(newSocket);
-  //   newSocket.on("getOnlineUserss", (userIds) => {
-  //     setOnlineUsers(userIds);
-  //   });
-  // };
-  const connectSocket = (userData) => {
-    if (!userData?._id) return;
+  const connectSocket = (userData, userToken) => {
+    if (!userData?._id || !userToken) return;
 
     // If a socket already exists, disconnect before reconnecting
     if (socket) {
       socket.disconnect();
     }
 
+    // create a new socket connection
     const newSocket = io(backendUrl, {
-      query: { userId: userData._id },
+      auth: { token: userToken },
       transports: ["websocket"], // added for real time usecase
       reconnection: true,
     });
 
-    // ✅ Register listeners only once
+    newSocket.on("disconnect", (reason) => {
+      console.log(
+        "Socket disconnected for:",
+        userData.fullName,
+        "Reason:",
+        reason,
+      );
+      if (reason === "io server disconnect") {
+        logout();
+      }
+    });
+
+    // Register listeners only once
     newSocket.once("connect", () => {
       console.log("🟢 Socket connected for:", userData.fullName);
     });
