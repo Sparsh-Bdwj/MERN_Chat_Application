@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { CallContext } from "../../../context/callContext.js";
+import { CallContext } from "../../../context/CallContext";
 
 const CallModal = () => {
   const { callAccepted, localVideoRef, remoteVideoRef, endCall } =

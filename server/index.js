@@ -5,6 +5,7 @@ import http from "http";
 import { connectDB } from "./libs/db.js";
 import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
+import aiRouter from "./routes/aiRoutes.js";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 
@@ -190,6 +191,8 @@ app.use("/api/status", (req, res) => res.send("Server is live"));
 app.use("/api/auth", userRouter);
 // adding the messageRouter
 app.use("/api/messages", messageRouter);
+// adding the aiRouter
+app.use("/api/ai", aiRouter);
 // connected to MONGODB
 await connectDB();
 const PORT = process.env.PORT || 5000;

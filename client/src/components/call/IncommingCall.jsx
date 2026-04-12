@@ -1,10 +1,15 @@
 import { useContext } from "react";
-import { CallContext } from "../../../context/callContext.js";
+import { CallContext } from "../../../context/CallContext";
+import { ChatContext } from "../../../context/ChatContext";
 
 const IncomingCall = () => {
   const { incomingCall, acceptCall, endCall } = useContext(CallContext);
+  const { users } = useContext(ChatContext);
 
   if (!incomingCall) return null;
+
+  const caller = users.find((user) => user._id === incomingCall.from);
+  const callerName = caller?.fullName || "Unknown user";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -13,7 +18,8 @@ const IncomingCall = () => {
           📞 Incoming Call
         </h2>
 
-        <p className="text-gray-300 mb-4">User ID: {incomingCall.from}</p>
+        <p className="text-gray-200 mb-1 font-medium">{callerName}</p>
+        <p className="text-xs text-gray-400 mb-4">{incomingCall.from}</p>
 
         <p className="text-sm text-gray-400 mb-6">
           {incomingCall.callType === "video"
