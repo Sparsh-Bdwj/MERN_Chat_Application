@@ -4,13 +4,14 @@ import Homepage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
-import { AuthContext } from "../context/AuthContext.jsx";
-
+import { AuthContext } from "../context/AuthContext";
+import IncomingCall from "./components/call/IncommingCall";
 const App = () => {
   const { authUser } = useContext(AuthContext);
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-gray-200">
       <Toaster />
+      <IncomingCall />
       <Routes>
         <Route
           path="/"

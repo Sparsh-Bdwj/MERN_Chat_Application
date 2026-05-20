@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext";
 import { ChatContext } from "../../context/ChatContext";
 
 const SideBar = () => {
@@ -18,13 +18,13 @@ const SideBar = () => {
   const navigate = useNavigate();
   const filterUsers = input
     ? users.filter((user) =>
-        user.fullName.toLowerCase().includes(input.toLowerCase())
+        user.fullName.toLowerCase().includes(input.toLowerCase()),
       )
     : users;
 
   useEffect(() => {
     getUsers();
-  }, [onlineUsers]);
+  }, [onlineUsers, getUsers]);
   return (
     <div
       className={`bg-[#8185B2]/10 h-full p-5 rounded-l-xl overflow-y-scroll text-white ${
